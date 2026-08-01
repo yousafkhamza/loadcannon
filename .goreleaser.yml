@@ -1,0 +1,54 @@
+version: 2
+project_name: loadcannon
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: loadcannon
+    main: ./cmd/loadcannon
+    binary: loadcannon
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.Version={{ .Version }}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Os }}_{{ .Arch }}
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+
+release:
+  github:
+    owner: yousafkhamza
+    name: loadcannon
+  header: |
+    ## loadcannon {{ .Version }}
+  footer: |
+    **Install:**
+    ```
+    curl -fsSL https://yousafkhamza.github.io/loadcannon/install.sh | bash -s -- {{ .Tag }}
+    ```

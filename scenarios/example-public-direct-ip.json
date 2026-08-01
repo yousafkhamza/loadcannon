@@ -1,0 +1,32 @@
+{
+  "name": "public-direct-ip-edge-node",
+  "target": {
+    "type": "public",
+    "url": "https://203.0.113.10",
+    "host_override": "api.example.com",
+    "insecure_skip_verify": true
+  },
+  "auth": {
+    "mode": "apikey",
+    "header": "X-API-Key",
+    "token_source": "env",
+    "token_ref": "PUBLIC_API_KEY"
+  },
+  "scenarios": [
+    {
+      "name": "get-products",
+      "method": "GET",
+      "path": "/v1/products",
+      "weight": 1,
+      "expect_status": 200
+    }
+  ],
+  "load": {
+    "vus": 15,
+    "duration": "1m"
+  },
+  "thresholds": {
+    "http_req_duration": "p(95)<400",
+    "http_req_failed": "rate<0.01"
+  }
+}

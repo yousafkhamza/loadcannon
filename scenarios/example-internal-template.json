@@ -1,0 +1,38 @@
+{
+  "_comment": "Copy this file per internal service. Replace every <PLACEHOLDER> below, then delete this _comment field (it's ignored by loadcannon but kept here so it doesn't get run by accident).",
+
+  "name": "<SERVICE_NAME>",
+  "target": {
+    "type": "internal",
+    "url": "https://<INTERNAL_LB_DNS_OR_IP>",
+    "host_override": "<SET_ONLY_IF_URL_IS_A_BARE_IP_e.g._internal-svc.company.internal>",
+    "insecure_skip_verify": false
+  },
+  "auth": {
+    "mode": "bearer",
+    "header": "Authorization",
+    "prefix": "Bearer ",
+    "token_source": "ssm",
+    "token_ref": "/<TEAM>/loadtest/<SERVICE_NAME>-token"
+  },
+  "scenarios": [
+    {
+      "name": "<ENDPOINT_NAME>",
+      "method": "GET",
+      "path": "/<ENDPOINT_PATH>",
+      "weight": 1,
+      "expect_status": 200
+    }
+  ],
+  "load": {
+    "stages": [
+      { "duration": "30s", "target": 20 },
+      { "duration": "1m", "target": 50 },
+      { "duration": "30s", "target": 0 }
+    ]
+  },
+  "thresholds": {
+    "http_req_duration": "p(95)<500",
+    "http_req_failed": "rate<0.01"
+  }
+}

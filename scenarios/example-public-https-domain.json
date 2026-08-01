@@ -1,0 +1,31 @@
+{
+  "name": "pay10-public-status-page",
+  "target": {
+    "type": "public",
+    "url": "https://status.pay10.com"
+  },
+  "auth": {
+    "mode": "apikey",
+    "header": "X-API-Key",
+    "prefix": "",
+    "token_source": "prompt",
+    "token_ref": "not-used-for-prompt"
+  },
+  "scenarios": [
+    {
+      "name": "status-summary",
+      "method": "GET",
+      "path": "/api/v1/summary",
+      "weight": 1,
+      "expect_status": 200
+    }
+  ],
+  "load": {
+    "vus": 25,
+    "duration": "2m"
+  },
+  "thresholds": {
+    "http_req_duration": "p(95)<800",
+    "http_req_failed": "rate<0.02"
+  }
+}
