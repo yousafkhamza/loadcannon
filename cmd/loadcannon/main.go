@@ -266,17 +266,33 @@ func cmdRun(args []string) {
 	}
 
 	summaryPath := outDir + "/summary.json"
-	if err := runner.Run(scriptPath, summaryPath, env, flagAll(args, "--k6-arg")); err != nil {
-		fmt.Fprintf(os.Stderr, "k6 run failed: %v\n", err)
+	runErr := runner.Run(scriptPath, summaryPath, env, flagAll(args, "--k6-arg"))
+	if runErr != nil {
+		// k6 exits non-zero for plenty of legitimate reasons — most commonly a
+		// threshold breach, which is exactly the run you most want a report
+		// for. Don't bail before rendering one; only treat this as fully
+		// fatal if k6 never actually produced a summary file.
+		fmt.Fprintf(os.Stderr, "k6 reported an error: %v\n", runErr)
+	}
+	if _, statErr := os.Stat(summaryPath); statErr != nil {
+		fmt.Fprintln(os.Stderr, "no summary was written — k6 did not complete the run")
 		os.Exit(1)
 	}
 
 	reportPath := outDir + "/report.html"
 	if err := report.Render(summaryPath, reportPath); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: report generation failed: %v\n", err)
+		if runErr != nil {
+			os.Exit(1)
+		}
 		return
 	}
 	fmt.Println("report: " + reportPath)
+
+	if runErr != nil {
+		// preserve a non-zero exit so CI pipelines still gate on threshold breaches
+		os.Exit(1)
+	}
 }
 
 func cmdReport(args []string) {

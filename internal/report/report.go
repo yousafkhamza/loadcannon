@@ -8,14 +8,35 @@ import (
 	"time"
 )
 
-// k6 --summary-export shape (trimmed to the fields we render).
-type metric struct {
-	Type   string             `json:"type"`
+// k6's --summary-export JSON has varied by version: older/current builds may
+// emit a flat shape per metric ({"avg":1,"p(95)":2,...}), while the shape
+// documented for the handleSummary() `data` argument nests stats under
+// "values" ({"type":"trend","values":{"avg":1,"p(95)":2,...}}). The
+// --summary-export flag has been marked unsupported/deprecated since k6
+// v0.30 with no stable schema guarantee, so rather than pin to one shape
+// (which silently produced an empty report against a real k6 v2.0 run),
+// this detects whichever shape is present per metric.
+type summary struct {
+	Metrics map[string]json.RawMessage `json:"metrics"`
+}
+
+type nestedMetric struct {
 	Values map[string]float64 `json:"values"`
 }
 
-type summary struct {
-	Metrics map[string]metric `json:"metrics"`
+// metricValues returns the stat->number map for one metric's raw JSON,
+// trying the nested {values:{...}} shape first and falling back to treating
+// the object itself as the flat stat map.
+func metricValues(raw json.RawMessage) map[string]float64 {
+	var nested nestedMetric
+	if err := json.Unmarshal(raw, &nested); err == nil && len(nested.Values) > 0 {
+		return nested.Values
+	}
+	var flat map[string]float64
+	if err := json.Unmarshal(raw, &flat); err == nil {
+		return flat
+	}
+	return nil
 }
 
 const tmplSrc = `<!doctype html>
@@ -55,15 +76,20 @@ func Render(summaryPath, outPath string) error {
 	var rows []row
 	order := []string{"http_reqs", "http_req_duration", "http_req_failed", "http_req_waiting", "iterations", "vus_max"}
 	for _, name := range order {
-		m, ok := s.Metrics[name]
+		raw, ok := s.Metrics[name]
 		if !ok {
 			continue
 		}
+		values := metricValues(raw)
 		for _, key := range []string{"avg", "p(95)", "rate", "count", "value"} {
-			if v, ok := m.Values[key]; ok {
+			if v, ok := values[key]; ok {
 				rows = append(rows, row{Name: name + " (" + key + ")", Value: fmt.Sprintf("%.2f", v)})
 			}
 		}
+	}
+
+	if len(rows) == 0 {
+		return fmt.Errorf("no recognized metrics found in %s — the k6 summary format may have changed; run with --k6-arg --verbose and check %s directly", summaryPath, summaryPath)
 	}
 
 	t, err := template.New("report").Parse(tmplSrc)
