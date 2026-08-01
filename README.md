@@ -55,6 +55,8 @@ You also need **k6** on the machine that actually runs the load (not needed just
 
 The two marked "internal-style" use public IPs/domains as honest stand-ins so you can see the whole tool work end-to-end immediately — swap the URL for your real internal target once you're ready. Only `example-internal-template.json` is a non-runnable placeholder.
 
+**A note on thresholds:** these example files' thresholds are set loose (e.g. `p(95)<3000` for httpbin.org) on purpose — they're hitting free, shared, community-run public infrastructure with no latency SLA, so a strict threshold will occasionally trip for reasons that have nothing to do with loadcannon itself. `k6 run` exiting non-zero on a threshold breach is k6 working correctly, not a bug — and loadcannon still writes the report either way (see [Known limitations](#known-limitations) if that ever isn't the case). Tighten these numbers to match your actual SLO once you swap in a real target.
+
 `example-internal-template.json` intentionally has an extra `_comment` field, which loadcannon rejects with a clear parse error until you delete it — so the template can never accidentally run as-is. Copy it, replace every `<PLACEHOLDER>`, delete `_comment`, then `loadcannon validate` it.
 
 ```bash

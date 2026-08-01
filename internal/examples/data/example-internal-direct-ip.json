@@ -23,6 +23,6 @@
     "duration": "20s"
   },
   "thresholds": {
-    "http_req_duration": "p(95)<400"
+    "http_req_duration": "p(95)<1000"
   }
 }
