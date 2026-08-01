@@ -119,6 +119,25 @@
   h2.section::after{content:'';flex:1;height:1px;background:var(--border)}
 
   .routes{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+
+  .steps{list-style:none;margin:0 0 0 .1rem;padding:0;position:relative}
+  .steps li{display:flex;gap:1rem;padding-bottom:1.5rem;position:relative}
+  .steps li:last-child{padding-bottom:0}
+  .steps li::before{
+    content:'';position:absolute;left:13px;top:28px;bottom:0;width:1px;
+    background:var(--border);
+  }
+  .steps li:last-child::before{display:none}
+  .stepnum{
+    flex-shrink:0;width:28px;height:28px;border-radius:50%;
+    border:1px solid var(--amber);color:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.85rem;
+    background:var(--bg-deep);
+  }
+  .steps li > div{padding-top:.2rem}
+  .steps code{display:inline-block;margin-bottom:.35rem}
+  .steps p{margin:0;color:var(--muted);font-size:.85rem;line-height:1.5}
   .route{
     border:1px solid var(--border);
     border-radius:var(--radius);
@@ -194,7 +213,7 @@
 
   <div class="titleblock">
     <div>DWG NO.<strong>LC&#8209;001</strong></div>
-    <div>REV<strong>v1.0.0</strong></div>
+    <div>REV<strong>v1.0.2</strong></div>
     <div>DRAWN BY<strong>Yousaf Hamza</strong></div>
     <div>SCALE<strong>1&nbsp;:&nbsp;N&nbsp;VUs</strong></div>
   </div>
@@ -222,6 +241,15 @@
       <span class="gauge-reading" id="gaugeReading">0 VUs</span>
     </div>
   </section>
+
+  <h2 class="section">quickstart</h2>
+  <ol class="steps">
+    <li><span class="stepnum">1</span><div><code>loadcannon examples --write scenarios</code><p>Pulls the bundled example files onto disk — the binary alone doesn't come with any.</p></div></li>
+    <li><span class="stepnum">2</span><div><code>cp scenarios/example-public-https-domain.json my-api.json</code><p>Pick whichever example matches your target (see the full set below), then edit <code>my-api.json</code>: the URL, auth, and endpoint paths.</p></div></li>
+    <li><span class="stepnum">3</span><div><code>loadcannon validate --scenario my-api.json</code><p>Resolves auth and fires <em>one</em> request. Confirms the config is right before spending VU-minutes on it.</p></div></li>
+    <li><span class="stepnum">4</span><div><code>loadcannon run --scenario my-api.json</code><p>Generates the k6 script, runs it, writes <code>loadcannon-out/report.html</code>.</p></div></li>
+    <li><span class="stepnum">5</span><div><code>open loadcannon-out/report.html</code><p>Read the results. Re-run <code>loadcannon --help</code> any time for this same sequence.</p></div></li>
+  </ol>
 
   <h2 class="section">prerequisites</h2>
   <div class="routes">
@@ -278,6 +306,41 @@
     <div class="card">
       <h3>tunnel-ssm.sh</h3>
       <p>Reach a private-subnet target via IAM-authenticated SSM port forwarding. No VPN, no open ports.</p>
+    </div>
+  </div>
+
+  <h2 class="section">example files</h2>
+  <p style="color:var(--muted);margin-top:-.5rem">Raw JSON, straight from the <code>main</code> branch — right-click → Save As, or <code>curl</code> them directly. Same six files <code>loadcannon examples --write scenarios</code> gives you.</p>
+  <div class="routes" style="grid-template-columns:1fr">
+    <div class="route">
+      <span class="tag">PUBLIC · HTTPS · DOMAIN</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>example-public-https-domain.json</span></div>
+      <p>Plain public hostname over HTTPS, API-key auth resolved from a masked prompt. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-https-domain.json">raw →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">PUBLIC · HTTP · DOMAIN</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>example-public-http-domain.json</span></div>
+      <p>Plain public hostname, no TLS — legacy services still on HTTP. No auth. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-http-domain.json">raw →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">PUBLIC · DIRECT IP</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>example-public-direct-ip.json</span></div>
+      <p>Public API hit by raw IP (e.g. one edge node) with a Host-header override and skipped cert verification. API-key auth from an env var. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-direct-ip.json">raw →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">INTERNAL · LB DOMAIN</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>example-internal-lb-domain.json</span></div>
+      <p>Internal API via an internal LB DNS name, bearer token resolved from AWS SSM Parameter Store. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-lb-domain.json">raw →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">INTERNAL · DIRECT IP</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>example-internal-direct-ip.json</span></div>
+      <p>Internal API hit by raw IP, bypassing the LB entirely — bearer token from an env var. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-direct-ip.json">raw →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">INTERNAL · TEMPLATE</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>example-internal-template.json</span></div>
+      <p>Blank placeholder version — copy this per new internal service. Won't parse until you delete its <code>_comment</code> field, so it can't run by accident. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-template.json">raw →</a></p>
     </div>
   </div>
 

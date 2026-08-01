@@ -14,6 +14,7 @@ import (
 
 	"github.com/yousafkhamza/loadcannon/internal/auth"
 	"github.com/yousafkhamza/loadcannon/internal/config"
+	"github.com/yousafkhamza/loadcannon/internal/examples"
 	"github.com/yousafkhamza/loadcannon/internal/k6gen"
 	"github.com/yousafkhamza/loadcannon/internal/report"
 	"github.com/yousafkhamza/loadcannon/internal/runner"
@@ -29,6 +30,8 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "examples":
+		cmdExamples(os.Args[2:])
 	case "run":
 		cmdRun(os.Args[2:])
 	case "validate":
@@ -51,11 +54,19 @@ func main() {
 func usage() {
 	fmt.Println(`loadcannon — load test internal and public APIs behind one config
 
-Usage:
-  loadcannon validate --scenario <file>          Resolve auth + fire one baseline request, no load
-  loadcannon run      --scenario <file> [flags]  Generate + execute a k6 run
-  loadcannon gen-k6    --scenario <file> -o <file>  Write the k6 script only, don't run it
-  loadcannon report    --summary <file> -o <file>   Render an HTML report from a k6 summary
+New here? Run these in order:
+  1. loadcannon examples --write scenarios                    copies example scenarios into ./scenarios
+  2. cp scenarios/example-public-https-domain.json my-api.json   pick the closest match, then edit my-api.json
+  3. loadcannon validate --scenario my-api.json               sanity check: resolves auth, fires ONE request
+  4. loadcannon run --scenario my-api.json                    runs the real load test via k6
+  5. open loadcannon-out/report.html                          view the results
+
+Commands:
+  loadcannon examples [--write <dir>]             list bundled examples, or copy them to <dir> (default: current dir)
+  loadcannon validate --scenario <file>           resolve auth + fire one baseline request, no load
+  loadcannon run      --scenario <file> [flags]   generate + execute a k6 run
+  loadcannon gen-k6    --scenario <file> -o <file>  write the k6 script only, don't run it
+  loadcannon report    --summary <file> -o <file>   render an HTML report from a k6 summary
   loadcannon version
 
 Run flags:
@@ -65,7 +76,8 @@ Run flags:
   --out <dir>          output directory for script/summary/report (default ./loadcannon-out)
   --k6-arg <arg>        pass an extra raw argument through to k6 (repeatable)
 
-See scenarios/example-internal.json and scenarios/example-public.json.`)
+Full docs, scenario file schema, and secret-handling model:
+  https://github.com/yousafkhamza/loadcannon`)
 }
 
 func mustParseScenario(path string) *config.Config {
@@ -98,6 +110,35 @@ func flagAll(args []string, name string) []string {
 		}
 	}
 	return out
+}
+
+func cmdExamples(args []string) {
+	writeDir := flagVal(args, "--write")
+	if writeDir == "" {
+		names, err := examples.List()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("Bundled example scenarios (run `loadcannon examples --write scenarios` to copy them to disk):")
+		for _, n := range names {
+			fmt.Println("  " + n)
+		}
+		return
+	}
+	written, err := examples.Write(writeDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+	for _, w := range written {
+		fmt.Println("wrote " + w)
+	}
+	if len(written) == 0 {
+		fmt.Println("nothing to write — all examples already exist in " + writeDir)
+	} else {
+		fmt.Println("\nnext: pick the closest match, edit it for your API, then `loadcannon validate --scenario <file>`")
+	}
 }
 
 func cmdValidate(args []string) {

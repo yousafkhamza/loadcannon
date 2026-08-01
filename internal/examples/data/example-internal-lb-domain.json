@@ -1,0 +1,44 @@
+{
+  "name": "pay10-internal-checkout",
+  "target": {
+    "type": "internal",
+    "url": "https://internal-checkout-lb.pay10.internal",
+    "host_override": "",
+    "insecure_skip_verify": false
+  },
+  "auth": {
+    "mode": "bearer",
+    "header": "Authorization",
+    "prefix": "Bearer ",
+    "token_source": "ssm",
+    "token_ref": "/pay10/loadtest/checkout-svc-token"
+  },
+  "scenarios": [
+    {
+      "name": "get-balance",
+      "method": "GET",
+      "path": "/v1/accounts/balance",
+      "weight": 3,
+      "expect_status": 200
+    },
+    {
+      "name": "create-payment",
+      "method": "POST",
+      "path": "/v1/payments",
+      "weight": 1,
+      "body": "{\"amount\":100,\"currency\":\"AED\"}",
+      "expect_status": 201
+    }
+  ],
+  "load": {
+    "stages": [
+      { "duration": "30s", "target": 20 },
+      { "duration": "1m", "target": 50 },
+      { "duration": "30s", "target": 0 }
+    ]
+  },
+  "thresholds": {
+    "http_req_duration": "p(95)<500",
+    "http_req_failed": "rate<0.01"
+  }
+}

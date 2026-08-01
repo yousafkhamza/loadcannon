@@ -1,0 +1,26 @@
+{
+  "name": "legacy-public-http-domain",
+  "target": {
+    "type": "public",
+    "url": "http://legacy-api.example.com"
+  },
+  "auth": {
+    "mode": "none"
+  },
+  "scenarios": [
+    {
+      "name": "ping",
+      "method": "GET",
+      "path": "/ping",
+      "weight": 1,
+      "expect_status": 200
+    }
+  ],
+  "load": {
+    "vus": 10,
+    "duration": "30s"
+  },
+  "thresholds": {
+    "http_req_duration": "p(95)<600"
+  }
+}

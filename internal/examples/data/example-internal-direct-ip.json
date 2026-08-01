@@ -1,0 +1,30 @@
+{
+  "name": "pay10-single-node-direct",
+  "target": {
+    "type": "internal",
+    "url": "https://10.20.4.17",
+    "host_override": "internal-checkout-lb.pay10.internal",
+    "insecure_skip_verify": true
+  },
+  "auth": {
+    "mode": "bearer",
+    "token_source": "env",
+    "token_ref": "LOADTEST_TOKEN"
+  },
+  "scenarios": [
+    {
+      "name": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "weight": 1,
+      "expect_status": 200
+    }
+  ],
+  "load": {
+    "vus": 10,
+    "duration": "1m"
+  },
+  "thresholds": {
+    "http_req_duration": "p(95)<300"
+  }
+}

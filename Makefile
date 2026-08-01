@@ -3,8 +3,13 @@
 VERSION ?= dev
 BINARY := loadcannon
 
-build:
+build: sync-examples
 	go build -ldflags "-s -w -X main.Version=$(VERSION)" -o bin/$(BINARY) ./cmd/loadcannon
+
+# internal/examples/data/ is a go:embed copy of scenarios/ (embed can't
+# reference files outside its package directory). Keep them identical.
+sync-examples:
+	cp scenarios/*.json internal/examples/data/
 
 test: fmt vet build
 	./bin/$(BINARY) version

@@ -23,6 +23,9 @@ jobs:
           go-version: "1.22"
           cache: true
 
+      - name: embedded examples in sync with scenarios/
+        run: diff -rq scenarios/ internal/examples/data/ || (echo "run 'make sync-examples' and commit the result" && exit 1)
+
       - name: gofmt check
         run: |
           fmt_out="$(gofmt -l .)"

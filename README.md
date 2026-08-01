@@ -2,6 +2,24 @@
 
 Load-test internal and public HTTP APIs from one scenario format. Wraps [k6](https://k6.io) for the actual traffic generation; loadcannon handles config, target resolution (LB / direct IP / hostname), and secure secret injection. Single static binary, zero third-party Go dependencies.
 
+## Quickstart
+
+```bash
+curl -fsSL https://yousafkhamza.github.io/loadcannon/install.sh | bash
+
+# the binary alone has no scenario files on disk — pull the bundled examples out first
+loadcannon examples --write scenarios
+
+cp scenarios/example-public-https-domain.json my-api.json
+# edit my-api.json: target.url, auth, and the endpoint paths for your API
+
+loadcannon validate --scenario my-api.json   # one request, sanity check before spending VU-minutes
+loadcannon run      --scenario my-api.json   # the real load test
+open loadcannon-out/report.html              # results
+```
+
+`loadcannon --help` prints this same sequence any time you need a reminder.
+
 ## Install
 
 ```bash
@@ -24,7 +42,7 @@ You also need **k6** on the machine that actually runs the load (not needed just
 
 ## Which example file to copy
 
-`scenarios/` ships six ready-to-copy files covering every combination you'll actually hit:
+`scenarios/` ships six ready-to-copy files covering every combination you'll actually hit. If you installed just the binary (not the repo), get them with `loadcannon examples --write scenarios` — they're embedded in the binary itself:
 
 | File | Target | Auth |
 |---|---|---|

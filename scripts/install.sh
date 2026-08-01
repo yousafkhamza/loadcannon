@@ -43,6 +43,10 @@ chmod +x "$INSTALL_DIR/loadcannon"
 echo "[ok] installed to $INSTALL_DIR/loadcannon"
 "$INSTALL_DIR/loadcannon" version
 
-echo
-echo "loadcannon also shells out to k6 to actually generate load — install it if you haven't:"
-echo "  https://k6.io/docs/get-started/installation/"
+if command -v k6 >/dev/null 2>&1; then
+  echo "[ok] k6 found: $(k6 version 2>/dev/null | head -n1)"
+else
+  echo
+  echo "loadcannon also shells out to k6 to actually generate load — install it:"
+  echo "  https://k6.io/docs/get-started/installation/"
+fi
