@@ -3,37 +3,246 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>loadcannon</title>
+<title>loadcannon — load test internal and public APIs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b0f14; --panel:#111820; --border:#21262d; --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950; }
+  :root{
+    --bg:#0f2540;
+    --bg-deep:#0a1c33;
+    --panel:#14304f;
+    --border:#2a4a6b;
+    --grid:rgba(234,242,251,0.045);
+    --text:#eaf2fb;
+    --muted:#8fa9c4;
+    --amber:#ffb703;
+    --green:#4ade80;
+    --radius:3px;
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.6}
-  .wrap{max-width:820px;margin:0 auto;padding:3rem 1.25rem}
-  h1{font-size:1.8rem;margin:0 0 .25rem}
-  .tag{color:var(--muted);margin-bottom:2rem}
-  .badge{display:inline-block;background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:.15rem .5rem;font-size:.75rem;color:var(--green);margin-right:.4rem}
-  pre{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto}
-  code{color:#a5d6ff}
-  h2{color:var(--accent);margin-top:2.5rem;font-size:1.1rem;border-bottom:1px solid var(--border);padding-bottom:.4rem}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem}
-  .card h3{margin:0 0 .4rem;font-size:.95rem;color:var(--text)}
-  .card p{margin:0;color:var(--muted);font-size:.85rem}
-  a{color:var(--accent)}
-  footer{margin-top:3rem;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);padding-top:1rem}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 1.25rem 4rem}
+
+  /* ---- title block, drafting-table convention ---- */
+  .titleblock{
+    margin-top:2rem;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.7rem;
+    color:var(--muted);
+    letter-spacing:.04em;
+    overflow:hidden;
+  }
+  .titleblock div{padding:.55rem .75rem;border-right:1px solid var(--border)}
+  .titleblock div:last-child{border-right:none}
+  .titleblock strong{display:block;color:var(--text);font-size:.75rem;margin-top:.15rem;letter-spacing:0}
+
+  /* ---- hero ---- */
+  .hero{
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:2rem;
+    align-items:center;
+    padding:3rem 0 2rem;
+    border-bottom:1px solid var(--border);
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:2.75rem;
+    line-height:1.05;
+    margin:0 0 .75rem;
+    letter-spacing:-.01em;
+  }
+  h1 span{color:var(--amber)}
+  .lede{color:var(--muted);font-size:1.05rem;max-width:38ch;margin:0 0 1.5rem}
+  .install{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.85rem;
+    background:var(--bg-deep);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:.9rem 1rem;
+    color:#a9d6ff;
+    overflow-x:auto;
+    position:relative;
+  }
+  .install::before{
+    content:'INSTALL';
+    position:absolute;top:-.55rem;left:.75rem;
+    background:var(--bg);
+    padding:0 .4rem;
+    font-size:.6rem;
+    color:var(--amber);
+    letter-spacing:.1em;
+  }
+
+  /* ---- gauge (signature element) ---- */
+  .gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:.35rem}
+  .gauge-label{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.15em}
+  .gauge-reading{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.6rem;color:var(--amber)}
+  #needle{
+    transform-origin:100px 100px;
+    transform:rotate(-90deg);
+    transition:transform 1.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .gauge-wrap.armed #needle{transform:rotate(58deg)}
+  @media (prefers-reduced-motion: reduce){
+    #needle{transition:none}
+  }
+
+  /* ---- schematic: routing paths ---- */
+  h2.section{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:.75rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin:3rem 0 1.25rem;
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+  }
+  h2.section::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  .routes{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  .route{
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:1rem;
+    background:var(--panel);
+  }
+  .route .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.65rem;
+    color:var(--green);
+    letter-spacing:.08em;
+    display:block;
+    margin-bottom:.6rem;
+  }
+  .route .path{
+    display:flex;align-items:center;gap:.4rem;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    color:var(--text);
+    margin-bottom:.5rem;
+  }
+  .route .node{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--amber);
+    flex-shrink:0;
+  }
+  .route .line{flex:1;height:1px;background:var(--border);position:relative}
+  .route p{margin:0;color:var(--muted);font-size:.82rem;line-height:1.5}
+
+  /* ---- capability cards ---- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:1.1rem 1.2rem;
+  }
+  .card h3{
+    margin:0 0 .4rem;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1rem;
+    font-weight:600;
+  }
+  .card h3::before{content:'§ ';color:var(--amber)}
+  .card p{margin:0;color:var(--muted);font-size:.85rem;line-height:1.55}
+
+  a{color:#a9d6ff}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--bg-deep);padding:.1rem .35rem;border-radius:2px;font-size:.85em}
+
+  footer{
+    margin-top:3rem;
+    border-top:1px solid var(--border);
+    padding-top:1.25rem;
+    color:var(--muted);
+    font-size:.78rem;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:.5rem;
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  @media (max-width:700px){
+    .hero{grid-template-columns:1fr}
+    .routes,.grid{grid-template-columns:1fr}
+    .titleblock{grid-template-columns:1fr 1fr}
+    h1{font-size:2.1rem}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <span class="badge">● zero-dependency</span><span class="badge">● Go</span><span class="badge">● k6</span>
-  <h1>loadcannon</h1>
-  <p class="tag">One config format to load-test internal and public APIs — LB, direct IP, or hostname — with secrets resolved securely at run time.</p>
 
-  <pre><code>curl -fsSL https://yousafkhamza.github.io/loadcannon/install.sh | bash</code></pre>
+  <div class="titleblock">
+    <div>DWG NO.<strong>LC&#8209;001</strong></div>
+    <div>REV<strong>v1.0.0</strong></div>
+    <div>DRAWN BY<strong>Yousaf Khan</strong></div>
+    <div>SCALE<strong>1&nbsp;:&nbsp;N&nbsp;VUs</strong></div>
+  </div>
 
-  <h2>Why</h2>
-  <p>Most load-testing setups end up as one-off k6 scripts with tokens pasted inline. loadcannon separates <em>what</em> you're testing (a scenario file) from <em>how the secret gets there</em> (env, file, AWS SSM, or a masked prompt) — and from <em>where the target actually is</em> (public hostname, internal LB, or a bare IP behind a Host header override).</p>
+  <section class="hero">
+    <div>
+      <h1>load<span>cannon</span></h1>
+      <p class="lede">One scenario format for testing internal and public APIs — LB, direct IP, or hostname — with secrets resolved securely at run time, not hardcoded.</p>
+      <div class="install">curl -fsSL https://yousafkhamza.github.io/loadcannon/install.sh | bash</div>
+    </div>
 
+    <div class="gauge-wrap" id="gaugeWrap">
+      <span class="gauge-label">SUSTAINED LOAD</span>
+      <svg width="200" height="120" viewBox="0 0 200 120">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#2a4a6b" stroke-width="14" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 100 20" fill="none" stroke="#4ade80" stroke-width="14" stroke-linecap="round" opacity="0.85"/>
+        <path d="M 100 20 A 80 80 0 0 1 165 55" fill="none" stroke="#ffb703" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+        <path d="M 165 55 A 80 80 0 0 1 180 100" fill="none" stroke="#f85149" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+        <g id="needle">
+          <line x1="100" y1="100" x2="100" y2="32" stroke="#eaf2fb" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <circle cx="100" cy="100" r="7" fill="#eaf2fb"/>
+      </svg>
+      <span class="gauge-reading" id="gaugeReading">0 VUs</span>
+    </div>
+  </section>
+
+  <h2 class="section">routing</h2>
+  <div class="routes">
+    <div class="route">
+      <span class="tag">PUBLIC</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>api.example.com</span></div>
+      <p>Plain hostname, HTTPS or HTTP. No network prerequisites.</p>
+    </div>
+    <div class="route">
+      <span class="tag">INTERNAL · LB</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>internal-lb.company.internal</span></div>
+      <p>Run from a host on the VPN/VPC, or tunnel in via <code>tunnel-ssm.sh</code>.</p>
+    </div>
+    <div class="route">
+      <span class="tag">DIRECT IP</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>10.20.4.17 <em style="color:var(--muted);font-style:normal">+ Host override</em></span></div>
+      <p>Bypasses DNS/round-robin to hit one node, SNI and Host header still correct.</p>
+    </div>
+  </div>
+
+  <h2 class="section">capability</h2>
   <div class="grid">
     <div class="card">
       <h3>validate</h3>
@@ -41,22 +250,49 @@
     </div>
     <div class="card">
       <h3>run</h3>
-      <p>Generates a k6 script and executes it, streaming k6's own output, then renders an HTML report.</p>
+      <p>Generates a k6 script, executes it, renders an HTML report from the summary.</p>
     </div>
     <div class="card">
       <h3>gen-k6</h3>
-      <p>Just want the script? Emit it without running, to hand off to a CI runner or another engineer.</p>
+      <p>Emit the script without running it — hand off to a CI runner or another engineer.</p>
     </div>
     <div class="card">
       <h3>tunnel-ssm.sh</h3>
-      <p>Reach a private-subnet endpoint via SSM port forwarding — no VPN, no open ports, IAM-authenticated.</p>
+      <p>Reach a private-subnet target via IAM-authenticated SSM port forwarding. No VPN, no open ports.</p>
     </div>
   </div>
 
-  <h2>Docs</h2>
-  <p>Full usage, scenario file schema, and secret-handling model: <a href="https://github.com/yousafkhamza/loadcannon">github.com/yousafkhamza/loadcannon</a></p>
+  <h2 class="section">reference</h2>
+  <p style="color:var(--muted)">Full scenario schema, secret-source options (<code>env</code> / <code>file</code> / <code>ssm</code> / <code>prompt</code>), and release process: <a href="https://github.com/yousafkhamza/loadcannon">github.com/yousafkhamza/loadcannon</a></p>
 
-  <footer>Built by <a href="https://yousafkhamza.github.io">Yousaf Khan</a> · MIT licensed</footer>
+  <footer>
+    <span>loadcannon — MIT licensed</span>
+    <span>Yousaf Khan · <a href="https://yousafkhamza.github.io">yousafkhamza.github.io</a></span>
+  </footer>
 </div>
+
+<script>
+  // page-load sequence: needle sweeps from zero to a sustained-load reading.
+  // single orchestrated moment, not ambient — and respects reduced-motion via CSS transition removal above.
+  window.addEventListener('DOMContentLoaded', () => {
+    const wrap = document.getElementById('gaugeWrap');
+    const reading = document.getElementById('gaugeReading');
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        wrap.classList.add('armed');
+        const target = 480;
+        const start = performance.now();
+        const dur = 1600;
+        function tick(now){
+          const p = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          reading.textContent = Math.round(eased * target) + ' VUs';
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }, 150);
+    });
+  });
+</script>
 </body>
 </html>
