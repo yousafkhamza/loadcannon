@@ -70,6 +70,14 @@
   }
   h1 span{color:var(--amber)}
   .lede{color:var(--muted);font-size:1.05rem;max-width:38ch;margin:0 0 1.5rem}
+  .install-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.65rem;
+    color:var(--amber);
+    letter-spacing:.15em;
+    margin:0 0 .4rem;
+    display:block;
+  }
   .install{
     font-family:'IBM Plex Mono', monospace;
     font-size:.85rem;
@@ -79,16 +87,7 @@
     padding:.9rem 1rem;
     color:#a9d6ff;
     overflow-x:auto;
-    position:relative;
-  }
-  .install::before{
-    content:'INSTALL';
-    position:absolute;top:-.55rem;left:.75rem;
-    background:var(--bg);
-    padding:0 .4rem;
-    font-size:.6rem;
-    color:var(--amber);
-    letter-spacing:.1em;
+    word-break:break-all;
   }
 
   /* ---- gauge (signature element) ---- */
@@ -196,7 +195,7 @@
   <div class="titleblock">
     <div>DWG NO.<strong>LC&#8209;001</strong></div>
     <div>REV<strong>v1.0.0</strong></div>
-    <div>DRAWN BY<strong>Yousaf Khan</strong></div>
+    <div>DRAWN BY<strong>Yousaf Hamza</strong></div>
     <div>SCALE<strong>1&nbsp;:&nbsp;N&nbsp;VUs</strong></div>
   </div>
 
@@ -204,6 +203,7 @@
     <div>
       <h1>load<span>cannon</span></h1>
       <p class="lede">One scenario format for testing internal and public APIs — LB, direct IP, or hostname — with secrets resolved securely at run time, not hardcoded.</p>
+      <span class="install-label">INSTALL</span>
       <div class="install">curl -fsSL https://yousafkhamza.github.io/loadcannon/install.sh | bash</div>
     </div>
 
@@ -222,6 +222,25 @@
       <span class="gauge-reading" id="gaugeReading">0 VUs</span>
     </div>
   </section>
+
+  <h2 class="section">prerequisites</h2>
+  <div class="routes">
+    <div class="route">
+      <span class="tag">REQUIRED</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>k6</span></div>
+      <p>Runs the actual load. <code>run</code> and <code>gen-k6</code> need it on PATH. <a href="https://k6.io/docs/get-started/installation/">Install guide →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">IF USING SSM AUTH</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>AWS CLI</span></div>
+      <p>Needed when a scenario's <code>token_source</code> is <code>ssm</code>. <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">Install guide →</a></p>
+    </div>
+    <div class="route">
+      <span class="tag">IF USING TUNNEL-SSM.SH</span>
+      <div class="path"><span class="node"></span><span class="line"></span><span>Session Manager plugin</span></div>
+      <p>Needed by the AWS CLI to open SSM port-forwarding sessions. <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html">Install guide →</a></p>
+    </div>
+  </div>
 
   <h2 class="section">routing</h2>
   <div class="routes">
@@ -267,7 +286,7 @@
 
   <footer>
     <span>loadcannon — MIT licensed</span>
-    <span>Yousaf Khan · <a href="https://yousafkhamza.github.io">yousafkhamza.github.io</a></span>
+    <span>Yousaf Hamza · <a href="https://yousafkhamza.github.io">yousafkhamza.github.io</a></span>
   </footer>
 </div>
 
