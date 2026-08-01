@@ -1,29 +1,26 @@
 {
-  "name": "public-direct-ip-edge-node",
+  "name": "public-direct-ip-no-token-demo",
   "target": {
     "type": "public",
-    "url": "https://203.0.113.10",
-    "host_override": "api.example.com",
+    "url": "https://1.1.1.1",
+    "host_override": "one.one.one.one",
     "insecure_skip_verify": true
   },
   "auth": {
-    "mode": "apikey",
-    "header": "X-API-Key",
-    "token_source": "env",
-    "token_ref": "PUBLIC_API_KEY"
+    "mode": "none"
   },
   "scenarios": [
     {
-      "name": "get-products",
+      "name": "cdn-trace",
       "method": "GET",
-      "path": "/v1/products",
+      "path": "/cdn-cgi/trace",
       "weight": 1,
       "expect_status": 200
     }
   ],
   "load": {
     "vus": 15,
-    "duration": "1m"
+    "duration": "30s"
   },
   "thresholds": {
     "http_req_duration": "p(95)<400",

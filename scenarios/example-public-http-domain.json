@@ -1,26 +1,27 @@
 {
-  "name": "legacy-public-http-domain",
+  "name": "public-http-no-token-demo",
   "target": {
     "type": "public",
-    "url": "http://legacy-api.example.com"
+    "url": "http://httpbin.org"
   },
   "auth": {
     "mode": "none"
   },
   "scenarios": [
     {
-      "name": "ping",
+      "name": "get",
       "method": "GET",
-      "path": "/ping",
+      "path": "/get",
       "weight": 1,
       "expect_status": 200
     }
   ],
   "load": {
     "vus": 10,
-    "duration": "30s"
+    "duration": "20s"
   },
   "thresholds": {
-    "http_req_duration": "p(95)<600"
+    "http_req_duration": "p(95)<800",
+    "http_req_failed": "rate<0.02"
   }
 }

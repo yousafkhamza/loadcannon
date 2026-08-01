@@ -6,10 +6,10 @@
 # No inbound security group rules or open ports required — auth is via IAM.
 #
 # Usage:
-#   ./scripts/tunnel-ssm.sh -i i-0abcd1234ef567890 -r us-east-1 -h internal-checkout-lb.pay10.internal -p 443 -l 8443
+#   ./scripts/tunnel-ssm.sh -i i-0abcd1234ef567890 -r us-east-1 -h internal-lb.company.internal -p 443 -l 8443
 #
 # Then point loadcannon at https://localhost:8443 with:
-#   target.host_override = "internal-checkout-lb.pay10.internal"
+#   target.host_override = "internal-lb.company.internal"
 #   target.insecure_skip_verify = true   (cert CN won't match localhost)
 set -euo pipefail
 

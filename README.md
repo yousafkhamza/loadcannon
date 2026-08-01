@@ -42,16 +42,18 @@ You also need **k6** on the machine that actually runs the load (not needed just
 
 ## Which example file to copy
 
-`scenarios/` ships six ready-to-copy files covering every combination you'll actually hit. If you installed just the binary (not the repo), get them with `loadcannon examples --write scenarios` — they're embedded in the binary itself:
+`scenarios/` ships six ready-to-copy files. Five of the six point at real, live, public test APIs — you can `loadcannon run` them right now, no account or real secrets needed — covering every target/auth combination you'll actually hit. If you installed just the binary (not the repo), get them with `loadcannon examples --write scenarios` — they're embedded in the binary itself:
 
 | File | Target | Auth |
 |---|---|---|
-| `example-public-https-domain.json` | Public API, HTTPS, plain hostname | `apikey`, resolved via masked `prompt` |
-| `example-public-http-domain.json` | Public API, plain HTTP (no TLS) — legacy/internal-only-by-network public services | `none` |
-| `example-public-direct-ip.json` | Public API hit directly by IP (e.g. testing one edge/PoP node), `host_override` + `insecure_skip_verify` set | `apikey`, resolved from `env` |
-| `example-internal-lb-domain.json` | Internal API via internal LB DNS name | `bearer`, resolved from AWS `ssm` |
-| `example-internal-direct-ip.json` | Internal API hit directly by IP, bypassing the LB, `host_override` + `insecure_skip_verify` set | `bearer`, resolved from `env` |
-| `example-internal-template.json` | **Blank placeholder template** — copy this per internal service you onboard | `bearer` via `ssm`, all fields are `<PLACEHOLDER>` |
+| `example-public-https-domain.json` | `jsonplaceholder.typicode.com` — public HTTPS, real live test API | **none needed** |
+| `example-public-http-domain.json` | `httpbin.org` — public, plain HTTP (no TLS) | **none needed** |
+| `example-public-direct-ip.json` | Cloudflare `1.1.1.1` hit directly by IP, `host_override` + `insecure_skip_verify` demonstrated | **none needed** |
+| `example-internal-lb-domain.json` | `httpbin.org/bearer` as a public stand-in for an internal LB domain | **token required** — any non-empty value works (`token_source: env`, `DEMO_TOKEN`) |
+| `example-internal-direct-ip.json` | Google `8.8.8.8` as a public stand-in, direct IP + `host_override`, no LB | **none needed** |
+| `example-internal-template.json` | **Blank placeholder template** — copy this per real internal service you onboard | `bearer` via `ssm`, all fields are `<PLACEHOLDER>` |
+
+The two marked "internal-style" use public IPs/domains as honest stand-ins so you can see the whole tool work end-to-end immediately — swap the URL for your real internal target once you're ready. Only `example-internal-template.json` is a non-runnable placeholder.
 
 `example-internal-template.json` intentionally has an extra `_comment` field, which loadcannon rejects with a clear parse error until you delete it — so the template can never accidentally run as-is. Copy it, replace every `<PLACEHOLDER>`, delete `_comment`, then `loadcannon validate` it.
 

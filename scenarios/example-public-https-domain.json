@@ -1,28 +1,24 @@
 {
-  "name": "pay10-public-status-page",
+  "name": "public-https-no-token-demo",
   "target": {
     "type": "public",
-    "url": "https://status.pay10.com"
+    "url": "https://jsonplaceholder.typicode.com"
   },
   "auth": {
-    "mode": "apikey",
-    "header": "X-API-Key",
-    "prefix": "",
-    "token_source": "prompt",
-    "token_ref": "not-used-for-prompt"
+    "mode": "none"
   },
   "scenarios": [
     {
-      "name": "status-summary",
+      "name": "get-post",
       "method": "GET",
-      "path": "/api/v1/summary",
+      "path": "/posts/1",
       "weight": 1,
       "expect_status": 200
     }
   ],
   "load": {
-    "vus": 25,
-    "duration": "2m"
+    "vus": 10,
+    "duration": "20s"
   },
   "thresholds": {
     "http_req_duration": "p(95)<800",

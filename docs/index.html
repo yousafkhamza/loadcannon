@@ -310,37 +310,37 @@
   </div>
 
   <h2 class="section">example files</h2>
-  <p style="color:var(--muted);margin-top:-.5rem">Raw JSON, straight from the <code>main</code> branch — right-click → Save As, or <code>curl</code> them directly. Same six files <code>loadcannon examples --write scenarios</code> gives you.</p>
+  <p style="color:var(--muted);margin-top:-.5rem">Every one of these hits a real, public, always-on API — run <code>loadcannon validate</code> or <code>loadcannon run</code> against any of them right now, no account or real credentials needed. Raw JSON from <code>main</code>: right-click → Save As, or <code>curl</code> directly. Same six files <code>loadcannon examples --write scenarios</code> gives you.</p>
   <div class="routes" style="grid-template-columns:1fr">
     <div class="route">
-      <span class="tag">PUBLIC · HTTPS · DOMAIN</span>
+      <span class="tag">PUBLIC · HTTPS · NO TOKEN</span>
       <div class="path"><span class="node"></span><span class="line"></span><span>example-public-https-domain.json</span></div>
-      <p>Plain public hostname over HTTPS, API-key auth resolved from a masked prompt. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-https-domain.json">raw →</a></p>
+      <p>Hits <code>jsonplaceholder.typicode.com</code> — a free fake REST API built for exactly this. No auth required. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-https-domain.json">raw →</a></p>
     </div>
     <div class="route">
-      <span class="tag">PUBLIC · HTTP · DOMAIN</span>
+      <span class="tag">PUBLIC · HTTP (NO TLS) · NO TOKEN</span>
       <div class="path"><span class="node"></span><span class="line"></span><span>example-public-http-domain.json</span></div>
-      <p>Plain public hostname, no TLS — legacy services still on HTTP. No auth. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-http-domain.json">raw →</a></p>
+      <p>Hits <code>httpbin.org</code> over plain HTTP — a public HTTP-debugging service, no signup or API key. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-http-domain.json">raw →</a></p>
     </div>
     <div class="route">
-      <span class="tag">PUBLIC · DIRECT IP</span>
+      <span class="tag">PUBLIC · DIRECT IP · NO TOKEN</span>
       <div class="path"><span class="node"></span><span class="line"></span><span>example-public-direct-ip.json</span></div>
-      <p>Public API hit by raw IP (e.g. one edge node) with a Host-header override and skipped cert verification. API-key auth from an env var. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-direct-ip.json">raw →</a></p>
+      <p>Hits Cloudflare's <code>1.1.1.1</code> directly by IP with a Host-header override — a real, permanently stable public IP, so this demonstrates the direct-IP pattern without needing an internal target. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-public-direct-ip.json">raw →</a></p>
     </div>
     <div class="route">
-      <span class="tag">INTERNAL · LB DOMAIN</span>
+      <span class="tag">INTERNAL-STYLE · DOMAIN · TOKEN REQUIRED</span>
       <div class="path"><span class="node"></span><span class="line"></span><span>example-internal-lb-domain.json</span></div>
-      <p>Internal API via an internal LB DNS name, bearer token resolved from AWS SSM Parameter Store. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-lb-domain.json">raw →</a></p>
+      <p>Uses <code>httpbin.org/bearer</code> as a public stand-in for an internal LB endpoint — it accepts any non-empty bearer token, so it exercises the full auth-resolution path (<code>token_source: env</code>) before you point it at a real internal service. Set <code>DEMO_TOKEN</code> to literally anything. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-lb-domain.json">raw →</a></p>
     </div>
     <div class="route">
-      <span class="tag">INTERNAL · DIRECT IP</span>
+      <span class="tag">INTERNAL-STYLE · DIRECT IP · NO TOKEN</span>
       <div class="path"><span class="node"></span><span class="line"></span><span>example-internal-direct-ip.json</span></div>
-      <p>Internal API hit by raw IP, bypassing the LB entirely — bearer token from an env var. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-direct-ip.json">raw →</a></p>
+      <p>Uses Google's <code>8.8.8.8</code> as a public stand-in, host-override + direct IP, no auth — the pattern for an unauthenticated internal healthcheck hit directly, bypassing the LB. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-direct-ip.json">raw →</a></p>
     </div>
     <div class="route">
-      <span class="tag">INTERNAL · TEMPLATE</span>
+      <span class="tag">INTERNAL · BLANK TEMPLATE</span>
       <div class="path"><span class="node"></span><span class="line"></span><span>example-internal-template.json</span></div>
-      <p>Blank placeholder version — copy this per new internal service. Won't parse until you delete its <code>_comment</code> field, so it can't run by accident. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-template.json">raw →</a></p>
+      <p>Not a live demo — copy this per new internal service. Won't parse until you delete its <code>_comment</code> field, so it can't run by accident. <a href="https://raw.githubusercontent.com/yousafkhamza/loadcannon/main/scenarios/example-internal-template.json">raw →</a></p>
     </div>
   </div>
 
